@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEURA | Home Portal</title>
+    <link rel="stylesheet" href="/static/styles.css"> <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body class="portal-body">
+    <header class="topbar">
+        <div class="topbar-left"></div>
+        <div class="topbar-center"><span class="logo-text">NEURA</span></div>
+        <div class="topbar-right"></div>
+    </header>
+
+    <main class="portal-container">
+        <h1 class="portal-title">Select a Module</h1>
+        <div class="hero-grid">
+            <a href="/static/dashboard.html" class="hero-card">
+                            <div class="hero-icon">📊</div>
+                <h3>Safety Dashboard</h3>
+                <p>Real-time analytics and event tracking.</p>
+            </a>
+            <a href="/static/dashboard.html?tab=projects" class="hero-card">
+                <div class="hero-icon">⚙️</div>
+                <h3>Control Center</h3>
+                <p>Manage keywords and data sources.</p>
+            </a>
+            <a href="/static/dashboard.html?tab=agentic" class="hero-card">
+                <div class="hero-icon">📡</div>
+                <h3>AI Signals</h3>
+                <p>Agentic crawler and domain analysis.</p>
+            </a>
+        </div>
+    </main>
+    <style>
+        /* Portal Specific Styles - Add to bottom of styles.css */
+        
+.portal-body {
+    background-color: #0f172a;
+    overflow-y: auto;
+}
+
+.portal-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: calc(100vh - 70px);
+    padding: 20px;
+}
+
+.portal-title {
+    margin-bottom: 40px;
+    font-size: 2rem;
+    color: #f8fafc;
+    letter-spacing: 1px;
+}
+
+.hero-grid {
+    display: flex;
+    gap: 25px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.hero-card {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 20px;
+    padding: 40px 30px;
+    width: 300px;
+    text-align: center;
+    text-decoration: none; 
+    transition: all 0.3s ease;
+}
+
+.hero-card:hover {
+    transform: translateY(-10px);
+    border-color: #3b82f6;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+}
+
+.hero-icon { font-size: 3.5rem; margin-bottom: 20px; }
+.hero-card h3 { color: #fff; margin-bottom: 10px; }
+.hero-card p { color: #94a3b8; font-size: 0.95rem; line-height: 1.4; }
+    </style>
+    <canvas id="neuralCanvas" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none;"></canvas>
+
+<script>
+const canvas = document.getElementById('neuralCanvas');
+const ctx = canvas.getContext('2d');
+let particles = [];
+
+function initCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+}
+
+class Particle {
+    constructor() {
+        this.x = Math.random() * canvas.width;
+        this.y = Math.random() * canvas.height;
+        this.vx = (Math.random() - 0.5) * 0.5;
+        this.vy = (Math.random() - 0.5) * 0.5;
+        this.radius = Math.random() * 2;
+    }
+    update() {
+        this.x += this.vx;
+        this.y += this.vy;
+        if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
+        if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
+    }
+    draw() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(100, 200, 255, 0.5)';
+        ctx.fill();
+    }
+}
+
+function connect() {
+    for (let a = 0; a < particles.length; a++) {
+        for (let b = a; b < particles.length; b++) {
+            let dx = particles[a].x - particles[b].x;
+            let dy = particles[a].y - particles[b].y;
+            let distance = Math.sqrt(dx * dx + dy * dy);
+            if (distance < 150) {
+                ctx.strokeStyle = `rgba(100, 200, 255, ${1 - distance/150 - 0.5})`;
+                ctx.lineWidth = 0.5;
+                ctx.beginPath();
+                ctx.moveTo(particles[a].x, particles[a].y);
+                ctx.lineTo(particles[b].x, particles[b].y);
+                ctx.stroke();
+            }
+        }
+    }
+}
+
+function animate() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    particles.forEach(p => { p.update(); p.draw(); });
+    connect();
+    requestAnimationFrame(animate);
+}
+
+window.addEventListener('resize', initCanvas);
+initCanvas();
+for (let i = 0; i < 80; i++) particles.push(new Particle());
+animate();
+</script>
+</body>
+<script>
+    // Add this to the TOP of app.js
+window.addEventListener('load', function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const tabToOpen = urlParams.get('tab');
+
+    if (tabToOpen) {
+        showTab(tabToOpen);
+    }
+});
+
+// Ensure your showTab looks like this
+function showTab(tabId) {
+    // Hide all tabs
+    const tabs = document.querySelectorAll('.tab-content');
+    tabs.forEach(t => t.classList.remove('active'));
+
+    // Show the one we want
+    const target = document.getElementById(tabId);
+    if (target) {
+        target.classList.add('active');
+    }
+}
+</script>
+</html>

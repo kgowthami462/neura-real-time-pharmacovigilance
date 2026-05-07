@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Experience & Safety Signals Dashboard</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <!-- Toast Container -->
+    <div id="toast-container"
+        style="position: fixed; bottom: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px;">
+    </div>
+
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <h2>Neura</h2>
+            </div>
+            <nav class="sidebar-nav">
+                <button class="nav-btn active" onclick="showTab('dashboard')">Dashboard</button>
+                <button class="nav-btn" onclick="showTab('projects')">Projects</button>
+                <button class="nav-btn" onclick="showTab('agentic')">Agentic Onboarding</button>
+            </nav>
+            <div style="margin-top: auto; padding-top: 20px; border-top: 1px solid var(--border); text-align: center;">
+                <button onclick="logout()" style="background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid #ef4444; padding: 8px 16px; border-radius: 6px; cursor: pointer; transition: all 0.2s; width: 100%;">Sign Out</button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="content">
+            
+            <!-- Reviewer Banner -->
+            <div id="reviewer-banner" style="background: linear-gradient(90deg, #1e3a8a, #3b82f6); padding: 15px 20px; border-bottom: 1px solid #60a5fa; display: flex; justify-content: space-between; align-items: center; z-index: 10;">
+                <div>
+                    <h3 style="color: white; margin-bottom: 5px; font-size: 1.1rem; margin-top: 0;">👋 Welcome</h3>
+                    <p style="color: #e0f2fe; font-size: 0.9rem; margin-bottom: 0;">This platform uses AI to detect adverse medication events in real-time. Try running the <strong>Analysis Pipeline</strong> in the Projects tab, or test the AI Agent crawler in the <strong>Onboarding tab</strong>!</p>
+                </div>
+                <button onclick="document.getElementById('reviewer-banner').style.display='none'" style="background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4); color: white; padding: 6px 12px; border-radius: 4px; cursor: pointer; transition: all 0.2s;">Dismiss</button>
+            </div>
+            
+            <!-- Dashboard Tab -->
+            <section id="dashboard" class="tab-content active">
+                <div class="scanning-line"></div>
+
+                <header class="top-header stagger-1">
+                    <h1>Real-Time Safety Signals</h1>
+                    <button class="refresh-btn" onclick="handleRefresh()">
+                        <span id="refresh-icon" style="font-size: 1.2rem;">↻</span>
+                        Refresh Data
+                    </button>
+                </header>
+
+                <div class="stats-grid">
+                    <div class="stat-card stagger-2">
+                        <h3>Total Signals Analyzed</h3>
+                        <p id="total-signals">0</p>
+                    </div>
+                    <div class="stat-card alert" style="animation-delay: 0.2s;">
+                        <h3>Critical Adverse Events</h3>
+                        <p id="total-adverse">0</p>
+                    </div>
+                    <div class="stat-card stagger-4">
+                        <h3>Overall Sentiment</h3>
+                        <p id="avg-sentiment">0.0</p>
+                    </div>
+                </div>
+
+                <div class="signals-container stagger-4">
+                    <h2>Recent Detected Signals</h2>
+
+                    <div id="empty-signals-state"
+                        style="display: none; text-align: center; padding: 40px; background: rgba(255,255,255,0.02); border-radius: 12px; margin-top: 20px; border: 1px dashed var(--border);">
+                        <span style="font-size: 2rem; display: block; margin-bottom: 10px;">📡</span>
+                        <h3 style="color: var(--text-main); margin-bottom: 5px;">No signals detected yet</h3>
+                        <p style="color: var(--text-muted); font-size: 0.9rem;">Configure your projects and run the
+                            analysis pipeline to begin real-time monitoring.</p>
+                    </div>
+
+                    <div class="signal-list custom-scrollbar" id="signal-list"
+                        style="max-height: 500px; overflow-y: auto; padding-right: 10px;">
+                        <!-- Signals will be injected here -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Projects Tab -->
+            <section id="projects" class="tab-content">
+                <header class="top-header">
+                    <h1>Projects</h1>
+                </header>
+
+                <div class="split-layout">
+                    <div class="form-card">
+                        <h2>Create New Project</h2>
+                        <form id="project-form">
+                            <input type="text" id="proj-name" placeholder="Project Name (e.g. Ozempic)" required>
+                            <input type="text" id="proj-desc" placeholder="Description" required>
+                            <input type="text" id="proj-keywords" placeholder="Keywords (comma separated)" required>
+                            <button type="submit" class="primary-btn">Create Project</button>
+                        </form>
+                    </div>
+
+                    <div class="form-card">
+                        <h2>Add Data Source</h2>
+                        <form id="source-form">
+                            <select id="source-project" required>
+                                <option value="" disabled selected>Select Project</option>
+                            </select>
+                            <select id="source-type" required>
+                                <option value="Reddit">Reddit</option>
+                                <option value="X">X (Twitter)</option>
+                                <option value="Forum">Generic Forum</option>
+                            </select>
+                            <input type="text" id="source-url" placeholder="Source URL" required>
+                            <select id="source-latency" required>
+                                <option value="Real-time">Real-time</option>
+                                <option value="Daily">Daily</option>
+                                <option value="Weekly">Weekly</option>
+                            </select>
+                            <button type="submit" class="primary-btn">Add Source</button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="action-card">
+                    <h2>Run Data Acquisition & Analysis</h2>
+                    <p>Trigger a crawl for a specific source to execute real-time extraction of adverse events using the
+                        AI pipeline.</p>
+                    <select id="trigger-source"></select>
+                    <button class="warning-btn" onclick="triggerCrawl()">Run Analysis Pipeline</button>
+                </div>
+            </section>
+
+            <!-- Agentic Tab -->
+            <section id="agentic" class="tab-content">
+                <header class="top-header">
+                    <h1>Agentic Crawler Onboarding</h1>
+                </header>
+                <div class="form-card full-width">
+                    <p style="margin-bottom: 15px;">Input an unknown forum URL. The LLM Agent will dynamically fetch the
+                        site, analyze the DOM, and generate a scraping configuration.</p>
+                    <input type="text" id="agentic-url"
+                        placeholder="Enter URL (e.g., https://en.wikipedia.org/wiki/Pharmacovigilance)" required>
+                    <button class="primary-btn" id="agentic-btn" onclick="runAgenticOnboarding()">Initialize AI
+                        Agent</button>
+
+                    <div id="agentic-result"
+                        style="display: none; margin-top: 20px; padding: 15px; background: rgba(0,0,0,0.3); border: 1px solid var(--accent); border-radius: 8px;">
+                        <h3 style="color: var(--accent); margin-bottom: 10px;">AI Generated Configuration:</h3>
+                        <pre id="agentic-json"
+                            style="font-size: 0.85rem; color: var(--text-main); white-space: pre-wrap; word-wrap: break-word;"></pre>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+    <script src="/static/app.js"></script>
+</body>
+
+</html>
